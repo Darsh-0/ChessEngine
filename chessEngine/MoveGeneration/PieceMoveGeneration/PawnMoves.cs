@@ -11,7 +11,6 @@ public static class PawnMoves
         List<Move> legalMoves = new List<Move>();
 
         bool isWhite = board.whiteToMove;
-
         ulong pawns = isWhite ? board.whitePawns : board.blackPawns;
         ulong enemy = board.enemyPieces;
         ulong all = board.allPieces;

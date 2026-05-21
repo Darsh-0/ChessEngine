@@ -24,6 +24,7 @@ public static class MoveGeneration
 
         legalMoves.AddRange(PawnMoves.GeneratePawnMoves(board));
         legalMoves.AddRange(KnightMoves.GenerateKnightMoves(board));
+        legalMoves.AddRange(RookMoves.GenerateRookMoves(board));
 
         return legalMoves;
     }
