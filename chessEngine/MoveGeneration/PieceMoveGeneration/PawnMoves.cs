@@ -1,11 +1,10 @@
-﻿namespace chessEngine.MoveGeneration;
+﻿using static chessEngine.MoveGeneration.MoveGeneration;
+
+namespace chessEngine.MoveGeneration;
 
 public static class PawnMoves
 {
-    const ulong FILE_A = 0x0101010101010101;
-    const ulong FILE_H = 0x8080808080808080;
-    const ulong RANK_2 = 0x000000000000FF00;
-    const ulong RANK_7 = 0x00FF000000000000;
+
 
     public static List<Move> GeneratePawnMoves(Board board)
     {
@@ -49,7 +48,7 @@ public static class PawnMoves
 
             ulong captureLeft = isWhite ? currentSquare << 7 : currentSquare >> 9;
             ulong captureRight = isWhite ? currentSquare << 9 : currentSquare >> 7;
-            
+
             if ((currentSquare & FILE_A) == 0 && (captureLeft & enemy) != 0)
             {
                 legalMoves.Add(new Move
@@ -67,10 +66,10 @@ public static class PawnMoves
                     to = captureRight
                 });
             }
-            
+
             if (board.enPassantFile != -1)
             {
-                int epRank = isWhite ? 5 : 2; 
+                int epRank = isWhite ? 5 : 2;
                 ulong ep = 1UL << (epRank * 8 + board.enPassantFile);
 
                 if ((currentSquare & FILE_A) == 0 && captureLeft == ep)

@@ -10,11 +10,20 @@ public struct Move
 
 public static class MoveGeneration
 {
+    public const ulong FILE_A = 0x0101010101010101;
+    public const ulong FILE_B = 0x0202020202020202;
+    public const ulong FILE_G = 0x4040404040404040; 
+    public const ulong FILE_H = 0x8080808080808080;
+    public const ulong RANK_1 = 0x00000000000000FF;
+    public const ulong RANK_2 = 0x000000000000FF00;
+    public const ulong RANK_7 = 0x00FF000000000000;
+    public const ulong RANK_8 = 0xFF00000000000000;
     public static List<Move> GenerateMoves(Board board)
     {
         List<Move> legalMoves = new List<Move>();
 
         legalMoves.AddRange(PawnMoves.GeneratePawnMoves(board));
+        legalMoves.AddRange(KnightMoves.GenerateKnightMoves(board));
 
         return legalMoves;
     }
