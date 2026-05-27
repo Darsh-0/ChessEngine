@@ -2,22 +2,22 @@
 
 namespace chessEngine.MoveGeneration;
 
-public static class RookMoves
+public static class BishopMoves 
 {
-    public static List<Move> GenerateRookMoves(Board board)
+    public static List<Move> GenerateBishopMoves(Board board)
     {
         List<Move> legalMoves = new List<Move>();
 
         bool isWhite = board.whiteToMove;
-        ulong rooks = isWhite ? board.whiteRooks : board.blackRooks;
+        ulong bishops = isWhite ? board.whiteBishops : board.blackBishops;
         ulong friendly = board.friendlyPieces;
 
-        while (rooks != 0)
+        while (bishops != 0)
         {
-            ulong currentSquare = rooks & (~rooks + 1);
+            ulong currentSquare = bishops & (~bishops + 1);
             int sq = MagicBitboards.BitIndex(currentSquare);
 
-            ulong attacks = MagicBitboards.GetRookAttacks(sq, board.allPieces) & ~friendly;
+            ulong attacks = MagicBitboards.GetBishopAttacks(sq, board.allPieces) & ~friendly;
 
             while (attacks != 0)
             {
@@ -25,7 +25,7 @@ public static class RookMoves
                 legalMoves.Add(new Move { from = currentSquare, to = to });
                 attacks &= attacks - 1;
             }
-            rooks &= rooks - 1;
+            bishops &= bishops - 1;
         }
         return legalMoves;
     }
