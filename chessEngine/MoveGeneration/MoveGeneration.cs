@@ -25,6 +25,7 @@ public static class MoveGeneration
         legalMoves.AddRange(RookMoves.GenerateRookMoves(board));
         legalMoves.AddRange(BishopMoves.GenerateBishopMoves(board));
         legalMoves.AddRange(QueenMoves.GenerateQueenMoves(board));
+        legalMoves.AddRange(KingMoves.GenerateKingMoves(board));
         
         return legalMoves;
     }

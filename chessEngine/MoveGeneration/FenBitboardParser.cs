@@ -98,6 +98,31 @@ public class FenBitboardParser
         board.friendlyPieces = board.whiteToMove ? board.whitePieces : board.blackPieces;
         board.enemyPieces = board.whiteToMove ? board.blackPieces : board.whitePieces;
 
+        board.whiteCastleKingSide = false;
+        board.whiteCastleQueenSide = false;
+        board.blackCastleKingSide = false;
+        board.blackCastleQueenSide = false;
+
+        if (parts[2].Contains('K'))
+        {
+            board.whiteCastleKingSide = true;
+        }
+
+        if (parts[2].Contains('Q'))
+        {
+            board.whiteCastleQueenSide = true;
+        }
+
+        if (parts[2].Contains('k'))
+        {
+            board.blackCastleKingSide = true;
+        }
+
+        if (parts[2].Contains('q'))
+        {
+            board.blackCastleQueenSide = true;
+        }
+        
         if (parts[3] != "-")
         {
             board.enPassantFile = parts[3][0] - 'a';

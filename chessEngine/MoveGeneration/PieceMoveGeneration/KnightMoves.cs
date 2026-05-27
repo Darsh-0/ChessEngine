@@ -59,4 +59,63 @@ public static class KnightMoves
 
         return legalMoves;
     }
+    
+    public static ulong GetAttackedSquares(Board board)
+    {
+        bool isWhite = board.whiteToMove;
+        ulong knights = isWhite ? board.whiteKnights : board.blackKnights;
+        ulong attacks = 0;
+
+        while (knights != 0)
+        {
+            ulong currentSquare = knights & (~knights + 1);
+
+            if ((currentSquare & (FILE_A | FILE_B)) == 0)
+                attacks |= currentSquare << 6 | currentSquare >> 10;
+
+            if ((currentSquare & (FILE_G | FILE_H)) == 0)
+                attacks |= currentSquare >> 6 | currentSquare << 10;
+
+            if ((currentSquare & FILE_A) == 0)
+                attacks |= currentSquare << 15 | currentSquare >> 17;
+
+            if ((currentSquare & FILE_H) == 0)
+                attacks |= currentSquare >> 15 | currentSquare << 17;
+
+            knights &= knights - 1;
+        }
+        return attacks;
+    }
+    
+    public static ulong GenerateKnightAttacks(Board board)
+    {
+        bool isWhite = board.whiteToMove;
+        ulong knights = isWhite ? board.whiteKnights : board.blackKnights;
+        ulong attacks = 0;
+
+        while (knights != 0)
+        {
+            ulong currentSquare = knights & (~knights + 1);
+
+            if ((currentSquare & (FILE_A | FILE_B)) == 0)
+            {
+                attacks |= currentSquare << 6 | currentSquare >> 10;
+            }
+            if ((currentSquare & (FILE_G | FILE_H)) == 0)
+            {
+                attacks |= currentSquare >> 6 | currentSquare << 10;
+            }
+            if ((currentSquare & FILE_A) == 0)
+            {
+                attacks |= currentSquare << 15 | currentSquare >> 17;
+            }
+            if ((currentSquare & FILE_H) == 0)
+            {
+                attacks |= currentSquare >> 15 | currentSquare << 17;
+            }
+
+            knights &= knights - 1;
+        }
+        return attacks;
+    }
 }

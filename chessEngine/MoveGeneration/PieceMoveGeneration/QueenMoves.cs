@@ -29,6 +29,23 @@ public static class QueenMoves
         }
         return legalMoves;
     }
+    
+    public static ulong GenerateQueenAttacks(Board board)
+    {
+        bool isWhite = board.whiteToMove;
+        ulong queens = isWhite ? board.whiteQueens : board.blackQueens;
+        ulong attacks = 0;
+
+        while (queens != 0)
+        {
+            ulong currentSquare = queens & (~queens + 1);
+            int sq = MagicBitboards.BitIndex(currentSquare);
+            attacks |= MagicBitboards.GetRookAttacks(sq, board.allPieces)
+                       | MagicBitboards.GetBishopAttacks(sq, board.allPieces);
+            queens &= queens - 1;
+        }
+        return attacks;
+    }
 }
 
 

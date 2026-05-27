@@ -83,4 +83,35 @@ public static class PawnMoves
 
         return legalMoves;
     }
+    
+    public static ulong GeneratePawnAttacks(Board board)
+    {
+        bool isWhite = board.whiteToMove;
+        ulong pawns = isWhite ? board.whitePawns : board.blackPawns;
+        ulong attacks = 0;
+
+        if (isWhite)
+        {
+            if ((pawns & FILE_A) == 0)
+            {
+                attacks |= pawns << 7;
+            }
+            if ((pawns & FILE_H) == 0)
+            {
+                attacks |= pawns << 9;
+            }
+        }
+        else
+        {
+            if ((pawns & FILE_H) == 0)
+            {
+                attacks |= pawns >> 7;
+            }
+            if ((pawns & FILE_A) == 0)
+            {
+                attacks |= pawns >> 9;
+            }
+        }
+        return attacks;
+    }
 }

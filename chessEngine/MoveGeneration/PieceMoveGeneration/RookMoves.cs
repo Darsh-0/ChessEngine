@@ -29,4 +29,20 @@ public static class RookMoves
         }
         return legalMoves;
     }
+    
+    public static ulong GenerateRookAttacks(Board board)
+    {
+        bool isWhite = board.whiteToMove;
+        ulong rooks = isWhite ? board.whiteRooks : board.blackRooks;
+        ulong attacks = 0;
+
+        while (rooks != 0)
+        {
+            ulong currentSquare = rooks & (~rooks + 1);
+            int sq = MagicBitboards.BitIndex(currentSquare);
+            attacks |= MagicBitboards.GetRookAttacks(sq, board.allPieces);
+            rooks &= rooks - 1;
+        }
+        return attacks;
+    }
 }

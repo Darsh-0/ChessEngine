@@ -29,4 +29,21 @@ public static class BishopMoves
         }
         return legalMoves;
     }
+    
+    public static ulong GenerateBishopAttacks(Board board)
+    {
+        bool isWhite = board.whiteToMove;
+        ulong bishops = isWhite ? board.whiteBishops : board.blackBishops;
+        ulong attacks = 0;
+
+        while (bishops != 0)
+        {
+            ulong currentSquare = bishops & (~bishops + 1);
+            int sq = MagicBitboards.BitIndex(currentSquare);
+            attacks |= MagicBitboards.GetBishopAttacks(sq, board.allPieces);
+            bishops &= bishops - 1;
+        }
+        return attacks;
+    }
+
 }
