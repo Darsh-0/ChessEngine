@@ -91,8 +91,8 @@ public class FenBitboardParser
             i -= 1;
         }
         
-        board.whitePieces = board.whitePawns | board.whiteBishops | board.whiteKnights | board.whiteQueens | board.whiteKing;
-        board.blackPieces = board.blackPawns | board.blackBishops |board.blackKnights | board.blackQueens | board.blackKing;
+        board.whitePieces = board.whitePawns | board.whiteBishops | board.whiteKnights | board.whiteRooks | board.whiteQueens | board.whiteKing;
+        board.blackPieces = board.blackPawns | board.blackBishops |board.blackKnights | board.blackRooks |board.blackQueens | board.blackKing;
         board.allPieces = board.whitePieces | board.blackPieces;
         
         board.friendlyPieces = board.whiteToMove ? board.whitePieces : board.blackPieces;

@@ -1,4 +1,5 @@
 ﻿using chessEngine.MoveGeneration.MagicBitBoards;
+using System.Collections.Generic;
 
 namespace chessEngine.MoveGeneration;
 

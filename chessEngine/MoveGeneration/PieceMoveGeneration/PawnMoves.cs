@@ -1,4 +1,5 @@
 ﻿using static chessEngine.MoveGeneration.MoveGeneration;
+using System.Collections.Generic;
 
 namespace chessEngine.MoveGeneration;
 
@@ -14,6 +15,7 @@ public static class PawnMoves
         ulong pawns = isWhite ? board.whitePawns : board.blackPawns;
         ulong enemy = board.enemyPieces;
         ulong all = board.allPieces;
+        ulong promotionRank = isWhite ? RANK_7 : RANK_2;
 
         while (pawns != 0)
         {
@@ -24,11 +26,21 @@ public static class PawnMoves
             // move once
             if ((all & inFrontSquare) == 0)
             {
-                legalMoves.Add(new Move
+                if ((currentSquare & promotionRank) != 0)
                 {
-                    from = currentSquare,
-                    to = inFrontSquare
-                });
+                    legalMoves.Add(new Move { from = currentSquare, to = inFrontSquare, promotionPiece = 'q' });
+                    legalMoves.Add(new Move { from = currentSquare, to = inFrontSquare, promotionPiece = 'k' });
+                    legalMoves.Add(new Move { from = currentSquare, to = inFrontSquare, promotionPiece = 'b' });
+                    legalMoves.Add(new Move { from = currentSquare, to = inFrontSquare, promotionPiece = 'r' });
+                } 
+                else 
+                {
+                    legalMoves.Add(new Move
+                    {
+                        from = currentSquare,
+                        to = inFrontSquare
+                    });
+                }
 
                 // move double on first move (unchanged logic style)
                 ulong doubleInFrontSquare = isWhite ? currentSquare << 16 : currentSquare >> 16;
@@ -50,20 +62,42 @@ public static class PawnMoves
 
             if ((currentSquare & FILE_A) == 0 && (captureLeft & enemy) != 0)
             {
-                legalMoves.Add(new Move
+                if ((currentSquare & promotionRank) != 0)
                 {
-                    from = currentSquare,
-                    to = captureLeft
-                });
+                    legalMoves.Add(new Move { from = currentSquare, to = captureLeft, promotionPiece = 'q' });
+                    legalMoves.Add(new Move { from = currentSquare, to = captureLeft, promotionPiece = 'k' });
+                    legalMoves.Add(new Move { from = currentSquare, to = captureLeft, promotionPiece = 'b' });
+                    legalMoves.Add(new Move { from = currentSquare, to = captureLeft, promotionPiece = 'r' });
+                }
+                else
+                {
+                    legalMoves.Add(new Move
+                    {
+                        from = currentSquare,
+                        to = captureLeft
+                    }); 
+                }
+
             }
 
             if ((currentSquare & FILE_H) == 0 && (captureRight & enemy) != 0)
             {
-                legalMoves.Add(new Move
+                if ((currentSquare & promotionRank) != 0)
                 {
-                    from = currentSquare,
-                    to = captureRight
-                });
+                    legalMoves.Add(new Move { from = currentSquare, to = captureRight, promotionPiece = 'q' });
+                    legalMoves.Add(new Move { from = currentSquare, to = captureRight, promotionPiece = 'k' });
+                    legalMoves.Add(new Move { from = currentSquare, to = captureRight, promotionPiece = 'b' });
+                    legalMoves.Add(new Move { from = currentSquare, to = captureRight, promotionPiece = 'r' }); 
+                }
+                else
+                {
+                    legalMoves.Add(new Move
+                    {
+                        from = currentSquare,
+                        to = captureRight
+                    }); 
+                }
+
             }
 
             if (board.enPassantFile != -1)
@@ -77,7 +111,7 @@ public static class PawnMoves
                 if ((currentSquare & FILE_H) == 0 && captureRight == ep)
                     legalMoves.Add(new Move { from = currentSquare, to = captureRight, isEnPassant = true });
             }
-
+            
             pawns &= pawns - 1;
         }
 

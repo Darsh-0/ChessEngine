@@ -1,4 +1,5 @@
 ﻿using static chessEngine.MoveGeneration.MoveGeneration;
+using System.Collections.Generic;
 
 namespace chessEngine.MoveGeneration;
 
@@ -9,6 +10,8 @@ public static class KingMoves
         List<Move> legalMoves = new List<Move>();
         
         bool isWhite = board.whiteToMove;
+        bool canCastleKingSide = isWhite ? board.whiteCastleKingSide : board.blackCastleKingSide;
+        bool canCastleQueenSide = isWhite ? board.whiteCastleQueenSide : board.blackCastleQueenSide;
 
         ulong king = isWhite ? board.whiteKing : board.blackKing;
         ulong friendly = board.friendlyPieces;
@@ -19,27 +22,53 @@ public static class KingMoves
         
         if ((currentSquare & FILE_A) == 0)
         {
-            attackingSquares |= currentSquare << 9 | currentSquare << 1 | currentSquare >> 7;
+            attackingSquares |= (currentSquare << 7) | (currentSquare >> 1) | (currentSquare >> 9);
         }
-
+        
         if ((currentSquare & FILE_H) == 0)
         {
-            attackingSquares |= currentSquare << 7 | currentSquare >> 1 | currentSquare >> 9;
+            attackingSquares |= (currentSquare << 9) | (currentSquare << 1) | currentSquare >> (7);
         }
-        
-        attackingSquares |= currentSquare >> 8 | currentSquare << 8;
 
-        Board enemyBoard = board;
-        enemyBoard.whiteToMove = !isWhite;
+        attackingSquares |= (currentSquare >> 8) | (currentSquare << 8);
         
-        ulong EnemyAttackingSquares = PawnMoves.GeneratePawnAttacks(enemyBoard)
-                                      | KnightMoves.GenerateKnightAttacks(enemyBoard)
-                                      | BishopMoves.GenerateBishopAttacks(enemyBoard)
-                                      | RookMoves.GenerateRookAttacks(enemyBoard)
-                                      | QueenMoves.GenerateQueenAttacks(enemyBoard)
-                                      | KingMoves.GenerateKingAttacks(enemyBoard);
- 
-        attackingSquares &= ~(friendly | EnemyAttackingSquares);
+        attackingSquares &= ~friendly;
+        
+        //casteling
+
+        if (canCastleKingSide)
+        {
+            ulong emptySquares = isWhite ? ((1UL << 5) | (1UL << 6)) : ((1UL << 61) | (1UL << 62));
+
+            ulong targetSquare = isWhite ? (1UL << 6) : (1UL << 62);
+
+            if ((board.allPieces & emptySquares) == 0)
+            {
+                legalMoves.Add(new Move
+                {
+                    from = king,
+                    to = targetSquare,
+                    castle = true
+                });
+            }
+        }
+
+        if (canCastleQueenSide)
+        {
+            ulong emptySquares = isWhite ? ((1UL << 1) | (1UL << 2) | (1UL << 3)) : ((1UL << 57) | (1UL << 58) | (1UL << 59));
+
+            ulong targetSquare = isWhite ? (1UL << 2) : (1UL << 58);
+
+            if ((board.allPieces & emptySquares) == 0)
+            {
+                legalMoves.Add(new Move
+                {
+                    from = king,
+                    to = targetSquare,
+                    castle = true
+                });
+            }
+        }
         
         while (attackingSquares != 0)
         {

@@ -34,4 +34,30 @@ public class Board
 
     public int halfmoveClock { get; set; }
     public int fullmoveNumber { get; set; }
+    
+    public Board Clone()
+    {
+        return new Board
+        {
+            whitePawns   = this.whitePawns,
+            blackPawns   = this.blackPawns,
+            whiteKnights = this.whiteKnights,
+            blackKnights = this.blackKnights,
+            whiteBishops = this.whiteBishops,
+            blackBishops = this.blackBishops,
+            whiteRooks   = this.whiteRooks,
+            blackRooks   = this.blackRooks,
+            whiteQueens  = this.whiteQueens,
+            blackQueens  = this.blackQueens,
+            whiteKing    = this.whiteKing,
+            blackKing    = this.blackKing,
+            whitePieces  = this.whitePieces,
+            blackPieces  = this.blackPieces,
+            allPieces    = this.allPieces,
+            friendlyPieces  = this.friendlyPieces,
+            enemyPieces     = this.enemyPieces,
+            whiteToMove     = this.whiteToMove,
+            enPassantFile   = this.enPassantFile
+        };
+    }
 }

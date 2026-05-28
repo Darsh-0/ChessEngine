@@ -1,4 +1,7 @@
-﻿public static class BitboardUtils
+﻿using System.Collections.Generic;
+using chessEngine.MoveGeneration;
+
+public static class BitboardUtils
 {
     public static readonly Dictionary<ulong, string> BitToAlgebraic = new Dictionary<ulong, string>
     {
@@ -26,6 +29,11 @@
         { 1UL << 56, "a8" }, { 1UL << 57, "b8" }, { 1UL << 58, "c8" }, { 1UL << 59, "d8" },
         { 1UL << 60, "e8" }, { 1UL << 61, "f8" }, { 1UL << 62, "g8" }, { 1UL << 63, "h8" }
     };
+
+    public static string MoveToUci(Move move)
+    {
+        return BitToAlgebraic[move.from] + BitToAlgebraic[move.to] + move.promotionPiece;
+    }
     
 
 

@@ -1,7 +1,11 @@
-﻿namespace chessEngine.MoveGeneration.MagicBitBoards;
+﻿using System;
+
+namespace chessEngine.MoveGeneration.MagicBitBoards;
 
 public static class MagicBitboards
 {
+    
+    
     public static ulong[] RookMasks = new ulong[64];
     public static ulong[] RookMagics = new ulong[64];
     public static ulong[][] RookTable = new ulong[64][];
@@ -11,6 +15,11 @@ public static class MagicBitboards
     public static ulong[] BishopMagics = new ulong[64];
     public static ulong[][] BishopTable = new ulong[64][];
     public static int[] BishopShifts = new int[64];
+    
+    static MagicBitboards()
+    {
+        Initialize();
+    }
 
     static ulong GenerateRookMask(int sq)
     {

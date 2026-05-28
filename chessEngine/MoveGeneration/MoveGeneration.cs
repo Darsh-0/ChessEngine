@@ -1,11 +1,15 @@
-﻿namespace chessEngine.MoveGeneration;
+﻿using System;
+
+namespace chessEngine.MoveGeneration;
+using System.Collections.Generic;
 
 public struct Move
 {
     public ulong from;
     public ulong to;
-    public bool? isPawn;
+    public char? promotionPiece;
     public bool? isEnPassant;
+    public bool? castle;
 }
 
 public static class MoveGeneration
@@ -16,17 +20,30 @@ public static class MoveGeneration
     public const ulong FILE_H = 0x8080808080808080;
     public const ulong RANK_2 = 0x000000000000FF00;
     public const ulong RANK_7 = 0x00FF000000000000;
+
     public static List<Move> GenerateMoves(Board board)
     {
+        List<Move> pseudoLegal = new List<Move>();
+
+        pseudoLegal.AddRange(PawnMoves.GeneratePawnMoves(board));
+        pseudoLegal.AddRange(KnightMoves.GenerateKnightMoves(board));
+        pseudoLegal.AddRange(BishopMoves.GenerateBishopMoves(board));
+        pseudoLegal.AddRange(RookMoves.GenerateRookMoves(board));
+        pseudoLegal.AddRange(QueenMoves.GenerateQueenMoves(board));
+        pseudoLegal.AddRange(KingMoves.GenerateKingMoves(board));
+
         List<Move> legalMoves = new List<Move>();
 
-        legalMoves.AddRange(PawnMoves.GeneratePawnMoves(board));
-        legalMoves.AddRange(KnightMoves.GenerateKnightMoves(board));
-        legalMoves.AddRange(RookMoves.GenerateRookMoves(board));
-        legalMoves.AddRange(BishopMoves.GenerateBishopMoves(board));
-        legalMoves.AddRange(QueenMoves.GenerateQueenMoves(board));
-        legalMoves.AddRange(KingMoves.GenerateKingMoves(board));
-        
+        foreach (Move move in pseudoLegal)
+        {
+            Board newBoard = BoardHelper.ApplyMove(board, move);
+            if (!CheckDetection.IsInCheck(newBoard, board.whiteToMove))
+            {
+                Console.WriteLine(BitboardUtils.MoveToUci(move));
+                legalMoves.Add(move);
+            }
+        }
+
         return legalMoves;
     }
 } 

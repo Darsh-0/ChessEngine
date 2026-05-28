@@ -1,39 +1,37 @@
-﻿using System.Diagnostics;
-using chessEngine.MoveGeneration;
+﻿using System;
+using System.Collections.Generic;
 using chessEngine.MoveGeneration.MagicBitBoards;
+using chessEngine;
+using chessEngine.MoveGeneration;
 
 namespace chessEngine;
 
 internal static class Program
 {
-    public static void Main(String[] args)
-    { 
-        Console.WriteLine(args[0]);
-        Stopwatch stopwatch = Stopwatch.StartNew();
-        stopwatch.Start();
-
-        //string startingFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-        // string startingFEN = "rnbqkbnr/pp1p1ppp/8/2p1p3/3P4/7P/PPP1PPP1/RNBQKBNR b KQkq c6 0 3";
-        //string startingFEN = "rnbqkbnr/pppp2pp/5p2/3Pp3/8/8/PPP1PPPP/RNBQKBNR w KQkq e6 0 3";
-        string startingFEN = "8/5k2/8/pK6/P7/8/8/8 w - - 1 1";
-        
-        if (args.Length == 1)
-        {
-            startingFEN = args[0];
-        }
-        
+    public static void Main()
+    {
+        #if !BROWSER
         MagicBitboards.Initialize();
-        
-        FenBitboardParser parser = new FenBitboardParser();
-        Board board = parser.FenToBitboard(startingFEN);
 
+        //string fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+        string fen = "7k/P7/7K/8/8/8/8/8 w - - 0 1";
+        //string fen = "7k/8/8/8/8/8/PP6/Kr6 w - - 0 1";
+        //string fen = "7k/8/8/8/2K5/8/8/8 w - - 0 1";
+
+        FenBitboardParser parser = new FenBitboardParser();
+        Board board = parser.FenToBitboard(fen);
+        
         List<Move> legalMoves = MoveGeneration.MoveGeneration.GenerateMoves(board);
-        foreach (Move legalMove in legalMoves)
-        {
-            Console.WriteLine(BitboardUtils.BitToAlgebraic[legalMove.from] + " - " + BitboardUtils.BitToAlgebraic[legalMove.to]);
-        }
         Console.WriteLine(legalMoves.Count);
-        stopwatch.Stop();
-        Console.WriteLine(stopwatch.Elapsed);
+        Random rand = new Random();
+        Move randomMove = legalMoves[rand.Next(0, legalMoves.Count)];
+        string randomMoveUci = BitboardUtils.MoveToUci(randomMove);
+        Console.WriteLine(randomMoveUci);
+        // foreach (Move move in legalMoves)
+        // {
+        //     Console.WriteLine(BitboardUtils.BitToAlgebraic[move.from] + BitboardUtils.BitToAlgebraic[move.to]);
+        // }
+        // Console.WriteLine(randomMoveUCI);
+        #endif
     }
 }
