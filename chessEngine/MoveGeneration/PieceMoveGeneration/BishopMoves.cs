@@ -1,11 +1,12 @@
 ﻿using chessEngine.MoveGeneration.MagicBitBoards;
 using System.Collections.Generic;
+using ChessEngine;
 
 namespace chessEngine.MoveGeneration;
 
 public static class BishopMoves 
 {
-    public static List<Move> GenerateBishopMoves(Board board)
+    public static List<Move> GenerateBishopMoves(Board board, ulong checkMask, ulong[] pinMasks)
     {
         List<Move> legalMoves = new List<Move>();
 
@@ -18,7 +19,8 @@ public static class BishopMoves
             ulong currentSquare = bishops & (~bishops + 1);
             int sq = MagicBitboards.BitIndex(currentSquare);
 
-            ulong attacks = MagicBitboards.GetBishopAttacks(sq, board.allPieces) & ~friendly;
+            ulong moveMask = checkMask & pinMasks[sq];
+            ulong attacks = MagicBitboards.GetBishopAttacks(sq, board.allPieces) & ~friendly & moveMask;
 
             while (attacks != 0)
             {
@@ -31,10 +33,10 @@ public static class BishopMoves
         return legalMoves;
     }
     
-    public static ulong GenerateBishopAttacks(Board board)
+    public static ulong GenerateEnemyBishopAttacks(Board board)
     {
         bool isWhite = board.whiteToMove;
-        ulong bishops = isWhite ? board.whiteBishops : board.blackBishops;
+        ulong bishops = isWhite ? board.blackBishops : board.whiteBishops;
         ulong attacks = 0;
 
         while (bishops != 0)

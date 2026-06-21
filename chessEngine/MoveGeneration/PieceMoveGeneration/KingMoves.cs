@@ -1,11 +1,12 @@
 ﻿using static chessEngine.MoveGeneration.MoveGeneration;
 using System.Collections.Generic;
+using ChessEngine;
 
 namespace chessEngine.MoveGeneration;
 
 public static class KingMoves
 {
-    public static List<Move> GenerateKingMoves(Board board)
+    public static List<Move> GenerateKingMoves(Board board, ulong enemyAttacks)
     {
         List<Move> legalMoves = new List<Move>();
         
@@ -32,41 +33,39 @@ public static class KingMoves
 
         attackingSquares |= (currentSquare >> 8) | (currentSquare << 8);
         
-        attackingSquares &= ~friendly;
+        attackingSquares &= ~friendly & ~enemyAttacks;
         
         //casteling
 
         if (canCastleKingSide)
         {
             ulong emptySquares = isWhite ? ((1UL << 5) | (1UL << 6)) : ((1UL << 61) | (1UL << 62));
-
+            ulong passThroughSquare = isWhite ? (1UL << 5) : (1UL << 61);
             ulong targetSquare = isWhite ? (1UL << 6) : (1UL << 62);
 
-            if ((board.allPieces & emptySquares) == 0)
+            bool squaresEmpty = (board.allPieces & emptySquares) == 0;
+            bool kingNotInCheck = (king & enemyAttacks) == 0;
+            bool pathSafe = (passThroughSquare & enemyAttacks) == 0 && (targetSquare & enemyAttacks) == 0;
+
+            if (squaresEmpty && kingNotInCheck && pathSafe)
             {
-                legalMoves.Add(new Move
-                {
-                    from = king,
-                    to = targetSquare,
-                    castle = true
-                });
+                legalMoves.Add(new Move { from = king, to = targetSquare, isCastle = true });
             }
         }
 
         if (canCastleQueenSide)
         {
             ulong emptySquares = isWhite ? ((1UL << 1) | (1UL << 2) | (1UL << 3)) : ((1UL << 57) | (1UL << 58) | (1UL << 59));
-
+            ulong passThroughSquare = isWhite ? (1UL << 3) : (1UL << 59);
             ulong targetSquare = isWhite ? (1UL << 2) : (1UL << 58);
 
-            if ((board.allPieces & emptySquares) == 0)
+            bool squaresEmpty = (board.allPieces & emptySquares) == 0;
+            bool kingNotInCheck = (king & enemyAttacks) == 0;
+            bool pathSafe = (passThroughSquare & enemyAttacks) == 0 && (targetSquare & enemyAttacks) == 0;
+
+            if (squaresEmpty && kingNotInCheck && pathSafe)
             {
-                legalMoves.Add(new Move
-                {
-                    from = king,
-                    to = targetSquare,
-                    castle = true
-                });
+                legalMoves.Add(new Move { from = king, to = targetSquare, isCastle = true });
             }
         }
         
@@ -83,10 +82,10 @@ public static class KingMoves
         return legalMoves;
     }
     
-    public static ulong GenerateKingAttacks(Board board)
+    public static ulong GenerateEnemyKingAttacks(Board board)
     {
         bool isWhite = board.whiteToMove;
-        ulong king = isWhite ? board.whiteKing : board.blackKing;
+        ulong king = isWhite ? board.blackKing : board.whiteKing;
         ulong attacks = 0;
 
         if ((king & FILE_H) == 0)

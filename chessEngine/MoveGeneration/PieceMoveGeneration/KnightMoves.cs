@@ -1,11 +1,12 @@
 ﻿using static chessEngine.MoveGeneration.MoveGeneration;
 using System.Collections.Generic;
+using ChessEngine;
 
 namespace chessEngine.MoveGeneration;
 
 public static class KnightMoves
 {
-    public static List<Move> GenerateKnightMoves(Board board)
+    public static List<Move> GenerateKnightMoves(Board board, ulong checkMask, ulong[] pinMasks)
     {
         List<Move> legalMoves = new List<Move>();
         
@@ -17,6 +18,8 @@ public static class KnightMoves
         while (knights != 0)
         {
             ulong currentSquare = knights & (~knights + 1);
+            int fromSquare = System.Numerics.BitOperations.TrailingZeroCount(currentSquare);
+            ulong moveMask = checkMask & pinMasks[fromSquare];
 
             ulong attackingSquares = 0;
             if ((currentSquare & (FILE_A | FILE_B)) == 0)
@@ -38,6 +41,8 @@ public static class KnightMoves
             {
                 attackingSquares |= currentSquare >> 15 | currentSquare << 17;
             }
+            
+            attackingSquares &= ~friendly & moveMask;
 
             while (attackingSquares != 0)
             {
@@ -61,15 +66,16 @@ public static class KnightMoves
         return legalMoves;
     }
 
-    public static ulong GenerateKnightAttacks(Board board)
+    public static ulong GenerateEnemyKnightAttacks(Board board)
     {
         bool isWhite = board.whiteToMove;
-        ulong knights = isWhite ? board.whiteKnights : board.blackKnights;
+        ulong knights = isWhite ? board.blackKnights : board.whiteKnights;
         ulong attacks = 0;
 
         while (knights != 0)
         {
             ulong currentSquare = knights & (~knights + 1);
+            
 
             if ((currentSquare & (FILE_A | FILE_B)) == 0)
             {

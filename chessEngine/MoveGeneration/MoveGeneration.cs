@@ -1,17 +1,9 @@
 ﻿using System;
+using ChessEngine;
+
 
 namespace chessEngine.MoveGeneration;
 using System.Collections.Generic;
-
-public struct Move
-{
-    public ulong from;
-    public ulong to;
-    public char? promotionPiece;
-    public bool? isEnPassant;
-    public bool? castle;
-}
-
 public static class MoveGeneration
 {
     public const ulong FILE_A = 0x0101010101010101;
@@ -23,26 +15,22 @@ public static class MoveGeneration
 
     public static List<Move> GenerateMoves(Board board)
     {
-        List<Move> pseudoLegal = new List<Move>();
-
-        pseudoLegal.AddRange(PawnMoves.GeneratePawnMoves(board));
-        pseudoLegal.AddRange(KnightMoves.GenerateKnightMoves(board));
-        pseudoLegal.AddRange(BishopMoves.GenerateBishopMoves(board));
-        pseudoLegal.AddRange(RookMoves.GenerateRookMoves(board));
-        pseudoLegal.AddRange(QueenMoves.GenerateQueenMoves(board));
-        pseudoLegal.AddRange(KingMoves.GenerateKingMoves(board));
-
+        ulong enemyAttacks = EnemyAttacks.GenerateEnemyAttacks(board);
+            
+        ulong checkMask = CheckMask.GetCheckMask(board, enemyAttacks);
+        ulong[] pinMasks = PinMasks.GetPinMasks(board);
+        
+        Console.WriteLine(enemyAttacks);
+        Console.WriteLine(checkMask);
+        
         List<Move> legalMoves = new List<Move>();
 
-        foreach (Move move in pseudoLegal)
-        {
-            Board newBoard = BoardHelper.ApplyMove(board, move);
-            if (!CheckDetection.IsInCheck(newBoard, board.whiteToMove))
-            {
-                Console.WriteLine(BitboardUtils.MoveToUci(move));
-                legalMoves.Add(move);
-            }
-        }
+        legalMoves.AddRange(PawnMoves.GeneratePawnMoves(board, checkMask, pinMasks));
+        legalMoves.AddRange(KnightMoves.GenerateKnightMoves(board, checkMask, pinMasks));
+        legalMoves.AddRange(BishopMoves.GenerateBishopMoves(board, checkMask, pinMasks));
+        legalMoves.AddRange(RookMoves.GenerateRookMoves(board, checkMask, pinMasks));
+        legalMoves.AddRange(QueenMoves.GenerateQueenMoves(board, checkMask, pinMasks));
+        legalMoves.AddRange(KingMoves.GenerateKingMoves(board, enemyAttacks));
 
         return legalMoves;
     }

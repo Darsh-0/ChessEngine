@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using ChessEngine;
 using chessEngine.MoveGeneration;
 
 public static class BitboardUtils

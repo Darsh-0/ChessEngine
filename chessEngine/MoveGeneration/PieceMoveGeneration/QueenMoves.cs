@@ -1,11 +1,12 @@
 ﻿using chessEngine.MoveGeneration.MagicBitBoards;
 using System.Collections.Generic;
+using ChessEngine;
 
 namespace chessEngine.MoveGeneration;
 
 public static class QueenMoves
 {
-    public static List<Move> GenerateQueenMoves(Board board)
+    public static List<Move> GenerateQueenMoves(Board board, ulong checkMask, ulong[] pinMasks)
     {
         List<Move> legalMoves = new List<Move>();
 
@@ -18,7 +19,8 @@ public static class QueenMoves
             ulong currentSquare = queens & (~queens + 1);
             int sq = MagicBitboards.BitIndex(currentSquare);
 
-            ulong attacks = MagicBitboards.GetQueenAttacks(sq, board.allPieces) & ~friendly;
+            ulong moveMask = checkMask & pinMasks[sq];
+            ulong attacks = MagicBitboards.GetQueenAttacks(sq, board.allPieces) & ~friendly & moveMask;
 
             while (attacks != 0)
             {
@@ -31,10 +33,10 @@ public static class QueenMoves
         return legalMoves;
     }
     
-    public static ulong GenerateQueenAttacks(Board board)
+    public static ulong GenerateEnemyQueenAttacks(Board board)
     {
         bool isWhite = board.whiteToMove;
-        ulong queens = isWhite ? board.whiteQueens : board.blackQueens;
+        ulong queens = isWhite ? board.blackQueens : board.whiteQueens;
         ulong attacks = 0;
 
         while (queens != 0)

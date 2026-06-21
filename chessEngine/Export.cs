@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices.JavaScript;
 using System.Runtime.Versioning;
+using ChessEngine;
 using chessEngine.MoveGeneration;
 using chessEngine.MoveGeneration.MagicBitBoards;
 

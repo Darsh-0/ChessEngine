@@ -1,11 +1,12 @@
 ﻿using chessEngine.MoveGeneration.MagicBitBoards;
 using System.Collections.Generic;
+using ChessEngine;
 
 namespace chessEngine.MoveGeneration;
 
 public static class RookMoves
 {
-    public static List<Move> GenerateRookMoves(Board board)
+    public static List<Move> GenerateRookMoves(Board board, ulong checkMask, ulong[] pinMasks)
     {
         List<Move> legalMoves = new List<Move>();
 
@@ -18,7 +19,8 @@ public static class RookMoves
             ulong currentSquare = rooks & (~rooks + 1);
             int sq = MagicBitboards.BitIndex(currentSquare);
 
-            ulong attacks = MagicBitboards.GetRookAttacks(sq, board.allPieces) & ~friendly;
+            ulong moveMask = checkMask & pinMasks[sq];
+            ulong attacks = MagicBitboards.GetRookAttacks(sq, board.allPieces) & ~friendly & moveMask;
 
             while (attacks != 0)
             {
@@ -28,13 +30,14 @@ public static class RookMoves
             }
             rooks &= rooks - 1;
         }
+
         return legalMoves;
     }
     
-    public static ulong GenerateRookAttacks(Board board)
+    public static ulong GenerateEnemyRookAttacks(Board board)
     {
         bool isWhite = board.whiteToMove;
-        ulong rooks = isWhite ? board.whiteRooks : board.blackRooks;
+        ulong rooks = isWhite ? board.blackRooks : board.whiteRooks;
         ulong attacks = 0;
 
         while (rooks != 0)

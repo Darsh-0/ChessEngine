@@ -1,5 +1,7 @@
 ﻿using static chessEngine.MoveGeneration.MoveGeneration;
 using System.Collections.Generic;
+using ChessBot.Core.Core;
+using ChessEngine;
 
 namespace chessEngine.MoveGeneration;
 
@@ -7,7 +9,7 @@ public static class PawnMoves
 {
 
 
-    public static List<Move> GeneratePawnMoves(Board board)
+    public static List<Move> GeneratePawnMoves(Board board, ulong checkMask, ulong[] pinMasks)
     {
         List<Move> legalMoves = new List<Move>();
 
@@ -20,18 +22,20 @@ public static class PawnMoves
         while (pawns != 0)
         {
             ulong currentSquare = pawns & (~pawns + 1);
+            int fromSquare = System.Numerics.BitOperations.TrailingZeroCount(currentSquare);
+            ulong moveMask = checkMask & pinMasks[fromSquare];
 
             ulong inFrontSquare = isWhite ? currentSquare << 8 : currentSquare >> 8;
 
             // move once
-            if ((all & inFrontSquare) == 0)
+            if ((all & inFrontSquare) == 0 && (inFrontSquare & moveMask) != 0)
             {
                 if ((currentSquare & promotionRank) != 0)
                 {
-                    legalMoves.Add(new Move { from = currentSquare, to = inFrontSquare, promotionPiece = 'q' });
-                    legalMoves.Add(new Move { from = currentSquare, to = inFrontSquare, promotionPiece = 'k' });
-                    legalMoves.Add(new Move { from = currentSquare, to = inFrontSquare, promotionPiece = 'b' });
-                    legalMoves.Add(new Move { from = currentSquare, to = inFrontSquare, promotionPiece = 'r' });
+                    legalMoves.Add(new Move { from = currentSquare, to = inFrontSquare, promotionPiece = Piece.Queen });
+                    legalMoves.Add(new Move { from = currentSquare, to = inFrontSquare, promotionPiece = Piece.Rook });
+                    legalMoves.Add(new Move { from = currentSquare, to = inFrontSquare, promotionPiece = Piece.Knight });
+                    legalMoves.Add(new Move { from = currentSquare, to = inFrontSquare, promotionPiece = Piece.Bishop });
                 } 
                 else 
                 {
@@ -47,7 +51,9 @@ public static class PawnMoves
 
                 bool onStartRank = isWhite ? (currentSquare & RANK_2) != 0 : (currentSquare & RANK_7) != 0;
 
-                if (onStartRank && (all & doubleInFrontSquare) == 0)
+                if (onStartRank && (all & inFrontSquare) == 0 
+                                && (all & doubleInFrontSquare) == 0 
+                                && (doubleInFrontSquare & moveMask) != 0)
                 {
                     legalMoves.Add(new Move
                     {
@@ -60,14 +66,14 @@ public static class PawnMoves
             ulong captureLeft = isWhite ? currentSquare << 7 : currentSquare >> 9;
             ulong captureRight = isWhite ? currentSquare << 9 : currentSquare >> 7;
 
-            if ((currentSquare & FILE_A) == 0 && (captureLeft & enemy) != 0)
+            if ((currentSquare & FILE_A) == 0 && (captureLeft & enemy) != 0 && (captureLeft & moveMask) != 0)
             {
                 if ((currentSquare & promotionRank) != 0)
                 {
-                    legalMoves.Add(new Move { from = currentSquare, to = captureLeft, promotionPiece = 'q' });
-                    legalMoves.Add(new Move { from = currentSquare, to = captureLeft, promotionPiece = 'k' });
-                    legalMoves.Add(new Move { from = currentSquare, to = captureLeft, promotionPiece = 'b' });
-                    legalMoves.Add(new Move { from = currentSquare, to = captureLeft, promotionPiece = 'r' });
+                    legalMoves.Add(new Move { from = currentSquare, to = captureLeft, promotionPiece = Piece.Queen });
+                    legalMoves.Add(new Move { from = currentSquare, to = captureLeft, promotionPiece = Piece.Rook });
+                    legalMoves.Add(new Move { from = currentSquare, to = captureLeft, promotionPiece = Piece.Knight });
+                    legalMoves.Add(new Move { from = currentSquare, to = captureLeft, promotionPiece = Piece.Bishop });
                 }
                 else
                 {
@@ -80,14 +86,14 @@ public static class PawnMoves
 
             }
 
-            if ((currentSquare & FILE_H) == 0 && (captureRight & enemy) != 0)
+            if ((currentSquare & FILE_H) == 0 && (captureRight & enemy) != 0 && (captureRight & moveMask) != 0)
             {
                 if ((currentSquare & promotionRank) != 0)
                 {
-                    legalMoves.Add(new Move { from = currentSquare, to = captureRight, promotionPiece = 'q' });
-                    legalMoves.Add(new Move { from = currentSquare, to = captureRight, promotionPiece = 'k' });
-                    legalMoves.Add(new Move { from = currentSquare, to = captureRight, promotionPiece = 'b' });
-                    legalMoves.Add(new Move { from = currentSquare, to = captureRight, promotionPiece = 'r' }); 
+                    legalMoves.Add(new Move { from = currentSquare, to = captureRight, promotionPiece = Piece.Queen });
+                    legalMoves.Add(new Move { from = currentSquare, to = captureRight, promotionPiece = Piece.Rook });
+                    legalMoves.Add(new Move { from = currentSquare, to = captureRight, promotionPiece = Piece.Knight });
+                    legalMoves.Add(new Move { from = currentSquare, to = captureRight, promotionPiece = Piece.Bishop }); 
                 }
                 else
                 {
@@ -103,12 +109,16 @@ public static class PawnMoves
             if (board.enPassantFile != -1)
             {
                 int epRank = isWhite ? 5 : 2;
-                ulong ep = 1UL << (epRank * 8 + board.enPassantFile);
+                ulong epTarget = 1UL << (epRank * 8 + board.enPassantFile);
 
-                if ((currentSquare & FILE_A) == 0 && captureLeft == ep)
+                ulong capturedPawn = isWhite ? epTarget >> 8 : epTarget << 8;
+                bool resolvesCheck = (epTarget & checkMask) != 0 || (capturedPawn & checkMask) != 0;
+                bool staysOnPin = (epTarget & pinMasks[fromSquare]) != 0;
+
+                if ((currentSquare & FILE_A) == 0 && captureLeft == epTarget && resolvesCheck && staysOnPin)
                     legalMoves.Add(new Move { from = currentSquare, to = captureLeft, isEnPassant = true });
 
-                if ((currentSquare & FILE_H) == 0 && captureRight == ep)
+                if ((currentSquare & FILE_H) == 0 && captureRight == epTarget && resolvesCheck && staysOnPin)
                     legalMoves.Add(new Move { from = currentSquare, to = captureRight, isEnPassant = true });
             }
             
@@ -118,10 +128,10 @@ public static class PawnMoves
         return legalMoves;
     }
     
-    public static ulong GeneratePawnAttacks(Board board)
+    public static ulong GenerateEnemyPawnAttacks(Board board)
     {
         bool isWhite = board.whiteToMove;
-        ulong pawns = isWhite ? board.whitePawns : board.blackPawns;
+        ulong pawns = isWhite ? board.blackPawns: board.whitePawns;
         ulong attacks = 0;
 
         if (isWhite)
