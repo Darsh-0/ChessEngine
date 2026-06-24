@@ -1,5 +1,6 @@
 ﻿using chessEngine.MoveGeneration.MagicBitBoards;
 using System.Collections.Generic;
+using ChessBot.Core.Core;
 using ChessEngine;
 
 namespace chessEngine.MoveGeneration;
@@ -25,7 +26,10 @@ public static class QueenMoves
             while (attacks != 0)
             {
                 ulong to = attacks & (~attacks + 1);
-                legalMoves.Add(new Move { from = currentSquare, to = to });
+                Piece? captured = (to & board.enemyPieces) != 0 
+                    ? board.GetPieceOnSquare(to) 
+                    : null;
+                legalMoves.Add(new Move { from = currentSquare, to = to, capturedPiece = captured });
                 attacks &= attacks - 1;
             }
             queens &= queens - 1;
@@ -37,14 +41,15 @@ public static class QueenMoves
     {
         bool isWhite = board.whiteToMove;
         ulong queens = isWhite ? board.blackQueens : board.whiteQueens;
+        ulong occupancy = board.allPieces ^ (isWhite ? board.whiteKing : board.blackKing);
         ulong attacks = 0;
 
         while (queens != 0)
         {
             ulong currentSquare = queens & (~queens + 1);
             int sq = MagicBitboards.BitIndex(currentSquare);
-            attacks |= MagicBitboards.GetRookAttacks(sq, board.allPieces)
-                       | MagicBitboards.GetBishopAttacks(sq, board.allPieces);
+            attacks |= MagicBitboards.GetRookAttacks(sq, occupancy)
+                       | MagicBitboards.GetBishopAttacks(sq, occupancy);
             queens &= queens - 1;
         }
         return attacks;

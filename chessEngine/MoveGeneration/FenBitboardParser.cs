@@ -1,10 +1,10 @@
 ﻿namespace chessEngine.MoveGeneration;
 
-public class FenBitboardParser
+public static class FenBitboardParser
 {
    
     // White pieces
-    public Board FenToBitboard(string fen)
+    public static Board FenToBitboard(string fen)
     {
         Board board = new Board();
         

@@ -21,9 +21,8 @@ public partial class ChessEngine
             MagicBitboards.Initialize();
             _initialized = true;
         }
-
-        FenBitboardParser parser = new FenBitboardParser();
-        Board board = parser.FenToBitboard(fen);
+        
+        Board board = FenBitboardParser.FenToBitboard(fen);
 
         List<Move> legalMoves = MoveGeneration.MoveGeneration.GenerateMoves(board);
 

@@ -20,8 +20,7 @@ public static class MoveGeneration
         ulong checkMask = CheckMask.GetCheckMask(board, enemyAttacks);
         ulong[] pinMasks = PinMasks.GetPinMasks(board);
         
-        Console.WriteLine(enemyAttacks);
-        Console.WriteLine(checkMask);
+        Console.WriteLine(BitboardUtils.UlongToBoard(enemyAttacks));
         
         List<Move> legalMoves = new List<Move>();
 

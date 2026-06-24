@@ -36,6 +36,19 @@ public static class BitboardUtils
         return BitToAlgebraic[move.from] + BitToAlgebraic[move.to] + move.promotionPiece;
     }
     
-
-
+    public static string UlongToBoard(ulong bitboard)
+    {
+        var sb = new System.Text.StringBuilder();
+        for (int rank = 7; rank >= 0; rank--)
+        {
+            for (int file = 0; file < 8; file++)
+            {
+                ulong square = 1UL << (rank * 8 + file);
+                sb.Append((bitboard & square) != 0 ? '1' : '0');
+                if (file < 7) sb.Append(' ');
+            }
+            sb.AppendLine();
+        }
+        return sb.ToString();
+    }
 }

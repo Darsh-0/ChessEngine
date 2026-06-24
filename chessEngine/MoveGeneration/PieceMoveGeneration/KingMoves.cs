@@ -1,5 +1,7 @@
-﻿using static chessEngine.MoveGeneration.MoveGeneration;
+﻿using System;
+using static chessEngine.MoveGeneration.MoveGeneration;
 using System.Collections.Generic;
+using ChessBot.Core.Core;
 using ChessEngine;
 
 namespace chessEngine.MoveGeneration;
@@ -72,10 +74,14 @@ public static class KingMoves
         while (attackingSquares != 0)
         {
             ulong to = attackingSquares & (~attackingSquares + 1);
+            Piece? captured = (to & board.enemyPieces) != 0 
+                ? board.GetPieceOnSquare(to) 
+                : null;
             legalMoves.Add(new Move
             {
                 from = currentSquare,
-                to = to
+                to = to,
+                capturedPiece = captured
             });
             attackingSquares &= attackingSquares - 1;
         }
