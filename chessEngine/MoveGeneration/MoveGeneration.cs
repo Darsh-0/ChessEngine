@@ -20,8 +20,6 @@ public static class MoveGeneration
         ulong checkMask = CheckMask.GetCheckMask(board, enemyAttacks);
         ulong[] pinMasks = PinMasks.GetPinMasks(board);
         
-        Console.WriteLine(BitboardUtils.UlongToBoard(enemyAttacks));
-        
         List<Move> legalMoves = new List<Move>();
 
         legalMoves.AddRange(PawnMoves.GeneratePawnMoves(board, checkMask, pinMasks));
