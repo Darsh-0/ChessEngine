@@ -4,6 +4,12 @@
         <OutputType>Exe</OutputType>
         <Nullable>enable</Nullable>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <RunAOTCompilation>true</RunAOTCompilation>
+        <WasmEnableSIMD>true</WasmEnableSIMD>
+        <InvariantGlobalization>true</InvariantGlobalization>
+        <PublishTrimmed>true</PublishTrimmed>
+        <WasmStripILAfterAOT>true</WasmStripILAfterAOT>
+        <WasmNativeStrip>true</WasmNativeStrip>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(RuntimeIdentifier)' == 'browser-wasm'">

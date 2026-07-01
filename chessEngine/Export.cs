@@ -32,8 +32,6 @@ public partial class ChessEngine
         }
 
         Move bestMove = MoveSelection.MoveSelection.SelctMove(board, legalMoves);
-        
-        Console.WriteLine(BitboardUtils.MoveToUci(bestMove));
 
         return BitboardUtils.MoveToUci(bestMove);
     }
