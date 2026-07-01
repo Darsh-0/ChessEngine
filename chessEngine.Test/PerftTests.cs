@@ -1,94 +1,162 @@
-﻿using chessEngine.MoveGeneration;
-using chessEngine.MoveGeneration.MagicBitBoards;
-using Xunit;
-using Xunit.Abstractions;
+﻿using Xunit;
+using chessEngine.MoveGeneration;
+using ChessEngine;
 
-namespace chessEngine.Test;
+namespace chessEngine.Tests;
 
 public class PerftTests
 {
-    private readonly ITestOutputHelper _output;
+    // -----------------------------------------------------------------------
+    // State save / restore
+    // -----------------------------------------------------------------------
 
-    public PerftTests(ITestOutputHelper output)
-    {
-        _output = output;
-        MagicBitboards.Initialize();
-    }
+    private record BoardState(
+        bool WhiteCastleKingSide,
+        bool WhiteCastleQueenSide,
+        bool BlackCastleKingSide,
+        bool BlackCastleQueenSide,
+        int  EnPassantFile,
+        int  HalfmoveClock);
 
-    // ── Starting position ──────────────────────────────────────
-    [Fact] public void Start_Depth1() => RunPerft("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", 1, 20);
-    //[Fact] public void Start_Depth2() => RunPerft("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", 2, 400);
-    //[Fact] public void Start_Depth3() => RunPerft("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", 3, 8902);
-    //[Fact] public void Start_Depth4() => RunPerft("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", 4, 197281);
+    private static BoardState SaveState(Board board) => new(
+        board.whiteCastleKingSide,
+        board.whiteCastleQueenSide,
+        board.blackCastleKingSide,
+        board.blackCastleQueenSide,
+        board.enPassantFile,
+        board.halfmoveClock);
 
-    // ── Kiwipete ───────────────────────────────────────────────
-    [Fact] public void Kiwipete_Depth1() => RunPerft("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1", 1, 48);
-    //[Fact] public void Kiwipete_Depth2() => RunPerft("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1", 2, 2039);
-    //[Fact] public void Kiwipete_Depth3() => RunPerft("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1", 3, 97862);
-    //[Fact] public void Kiwipete_Depth4() => RunPerft("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1", 4, 4085603);
+    private static void RestoreState(Board board, Move move, BoardState s) =>
+        board.UndoMove(move,
+            s.WhiteCastleKingSide,
+            s.WhiteCastleQueenSide,
+            s.BlackCastleKingSide,
+            s.BlackCastleQueenSide,
+            s.EnPassantFile,
+            s.HalfmoveClock);
 
-    // ── Position 3 ─────────────────────────────────────────────
-    [Fact] public void Position3_Depth1() => RunPerft("8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1", 1, 14);
-    //[Fact] public void Position3_Depth2() => RunPerft("8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1", 2, 191);
-    //[Fact] public void Position3_Depth3() => RunPerft("8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1", 3, 2812);
-    //[Fact] public void Position3_Depth4() => RunPerft("8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1", 4, 43238);
+    // -----------------------------------------------------------------------
+    // Perft core
+    // -----------------------------------------------------------------------
 
-    // ── Position 4 ─────────────────────────────────────────────
-    [Fact] public void Position4_Depth1() => RunPerft("r3k2r/Pppp1ppp/1b3nbB/nP6/BBp1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1", 1, 6);
-    //[Fact] public void Position4_Depth2() => RunPerft("r3k2r/Pppp1ppp/1b3nbB/nP6/BBp1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1", 2, 264);
-    //[Fact] public void Position4_Depth3() => RunPerft("r3k2r/Pppp1ppp/1b3nbB/nP6/BBp1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1", 3, 9467);
-    //[Fact] public void Position4_Depth4() => RunPerft("r3k2r/Pppp1ppp/1b3nbB/nP6/BBp1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1", 4, 422333);
-
-    // ── Divide helper (call manually to debug a failing test) ──
-    public void Divide(string fen, int depth)
-    {
-        FenBitboardParser parser = new FenBitboardParser();
-        Board board = parser.FenToBitboard(fen);
-
-        List<Move> moves = MoveGeneration.MoveGeneration.GenerateMoves(board);
-        ulong total = 0;
-
-        foreach (Move move in moves)
-        {
-            Board newBoard = BoardHelper.ApplyMove(board, move);
-            ulong nodes = Perft(newBoard, depth - 1);
-            total += nodes;
-
-            string from = BitboardUtils.BitToAlgebraic[move.from];
-            string to   = BitboardUtils.BitToAlgebraic[move.to];
-            _output.WriteLine($"{from}{to}: {nodes}");
-        }
-
-        _output.WriteLine($"\nTotal: {total}");
-    }
-
-    void RunPerft(string fen, int depth, ulong expected)
-    {
-        FenBitboardParser parser = new FenBitboardParser();
-        Board board = parser.FenToBitboard(fen);
-
-        long start  = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-        ulong result = Perft(board, depth);
-        long elapsed = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - start;
-
-        _output.WriteLine($"depth {depth}: {result} nodes in {elapsed}ms");
-
-        Assert.Equal(expected, result);
-    }
-
-    static ulong Perft(Board board, int depth)
+    private static long Perft(Board board, int depth)
     {
         if (depth == 0) return 1;
 
-        List<Move> moves = MoveGeneration.MoveGeneration.GenerateMoves(board);
-        ulong nodes = 0;
+        var moves = MoveGeneration.MoveGeneration.GenerateMoves(board);
+        if (depth == 1) return moves.Count;
 
-        foreach (Move move in moves)
+        long nodes = 0;
+        foreach (var move in moves)
         {
-            Board newBoard = BoardHelper.ApplyMove(board, move);
-            nodes += Perft(newBoard, depth - 1);
+            var state = SaveState(board);
+            board.MakeMove(move);
+            nodes += Perft(board, depth - 1);
+            RestoreState(board, move, state);
         }
-
         return nodes;
     }
+
+    // -----------------------------------------------------------------------
+    // Perft divide – useful for isolating bugs move-by-move
+    // -----------------------------------------------------------------------
+
+    public static Dictionary<string, long> PerftDivide(string fen, int depth)
+    {
+        var board  = FenBitboardParser.FenToBitboard(fen);
+        var result = new Dictionary<string, long>();
+        var moves  = MoveGeneration.MoveGeneration.GenerateMoves(board);
+
+        foreach (var move in moves)
+        {
+            var state = SaveState(board);
+            board.MakeMove(move);
+            long nodes = Perft(board, depth - 1);
+            RestoreState(board, move, state);
+            result[MoveLabel(move)] = nodes;
+        }
+
+        return result;
+    }
+
+    private static string MoveLabel(Move move)
+    {
+        string promo = move.promotionPiece.HasValue
+            ? move.promotionPiece.Value.ToString().ToLower()[0].ToString()
+            : "";
+        return $"{SquareLabel(move.from)}{SquareLabel(move.to)}{promo}";
+    }
+
+    private static string SquareLabel(ulong square)
+    {
+        int idx = System.Numerics.BitOperations.TrailingZeroCount(square);
+        return $"{(char)('a' + idx % 8)}{(char)('1' + idx / 8)}";
+    }
+
+    // -----------------------------------------------------------------------
+    // Known positions + expected node counts
+    // -----------------------------------------------------------------------
+
+    private const string StartPos = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    private const string Kiwipete = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
+    private const string Pos3     = "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1";
+    private const string Pos4     = "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1";
+    private const string Pos5     = "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8";
+    private const string Pos6     = "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10";
+
+    [Theory]
+    [InlineData(1,        20)]
+    [InlineData(2,       400)]
+    [InlineData(3,      8902)]
+    [InlineData(4,    197281)]
+    [InlineData(5,   4865609)]
+    [InlineData(6, 119060324)]
+    public void StartingPosition_Perft(int depth, long expected)
+        => Assert.Equal(expected, Perft(FenBitboardParser.FenToBitboard(StartPos), depth));
+
+    [Theory]
+    [InlineData(1,        48)]
+    [InlineData(2,      2039)]
+    [InlineData(3,     97862)]
+    [InlineData(4,   4085603)]
+    [InlineData(5, 193690690)]
+    public void Kiwipete_Perft(int depth, long expected)
+        => Assert.Equal(expected, Perft(FenBitboardParser.FenToBitboard(Kiwipete), depth));
+
+    [Theory]
+    [InlineData(1,       14)]
+    [InlineData(2,      191)]
+    [InlineData(3,     2812)]
+    [InlineData(4,    43238)]
+    [InlineData(5,   674624)]
+    [InlineData(6, 11030083)]
+    public void Position3_Perft(int depth, long expected)
+        => Assert.Equal(expected, Perft(FenBitboardParser.FenToBitboard(Pos3), depth));
+
+    [Theory]
+    [InlineData(1,        6)]
+    [InlineData(2,      264)]
+    [InlineData(3,     9467)]
+    [InlineData(4,   422333)]
+    [InlineData(5, 15833292)]
+    public void Position4_Perft(int depth, long expected)
+        => Assert.Equal(expected, Perft(FenBitboardParser.FenToBitboard(Pos4), depth));
+
+    [Theory]
+    [InlineData(1,       44)]
+    [InlineData(2,     1486)]
+    [InlineData(3,    62379)]
+    [InlineData(4,  2103487)]
+    [InlineData(5, 89941194)]
+    public void Position5_Perft(int depth, long expected)
+        => Assert.Equal(expected, Perft(FenBitboardParser.FenToBitboard(Pos5), depth));
+
+    [Theory]
+    [InlineData(1,        46)]
+    [InlineData(2,      2079)]
+    [InlineData(3,     89890)]
+    [InlineData(4,   3894594)]
+    [InlineData(5, 164075551)]
+    public void Position6_Perft(int depth, long expected)
+        => Assert.Equal(expected, Perft(FenBitboardParser.FenToBitboard(Pos6), depth));
 }

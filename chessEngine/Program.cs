@@ -30,7 +30,7 @@ internal static class Program
         //Console.WriteLine(randomMoveUci);
         foreach (Move move in legalMoves)
         {
-            Console.WriteLine(BitboardUtils.BitToAlgebraic[move.from] + BitboardUtils.BitToAlgebraic[move.to]);
+            Console.WriteLine(BitboardUtils.MoveToUci(move));
         }
         #endif
     }

@@ -34,7 +34,6 @@ public partial class ChessEngine
         Random rand = new Random();
         Move randomMove = legalMoves[rand.Next(0, legalMoves.Count)];
 
-        return BitboardUtils.BitToAlgebraic[randomMove.from]
-               + BitboardUtils.BitToAlgebraic[randomMove.to];
+        return BitboardUtils.MoveToUci(randomMove);
     }
 }

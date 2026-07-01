@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using ChessBot.Core.Core;
 using ChessEngine;
 using chessEngine.MoveGeneration;
 
@@ -33,7 +34,13 @@ public static class BitboardUtils
 
     public static string MoveToUci(Move move)
     {
-        return BitToAlgebraic[move.from] + BitToAlgebraic[move.to] + move.promotionPiece;
+        string promotionString = "";
+        if (move.promotionPiece == Piece.Queen) promotionString = "q";
+        else if (move.promotionPiece == Piece.Rook) promotionString = "r";
+        else if (move.promotionPiece == Piece.Knight) promotionString = "n";
+        else if (move.promotionPiece == Piece.Bishop) promotionString = "b";
+        
+        return BitToAlgebraic[move.from] + BitToAlgebraic[move.to] + promotionString;
     }
     
     public static string UlongToBoard(ulong bitboard)
