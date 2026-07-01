@@ -14,7 +14,7 @@ public partial class ChessEngine
     private static bool _initialized = false;
 
     [JSExport]
-    public static string GetRandomMove(string fen)
+    public static string GetBestMove(string fen)
     {
         if (!_initialized)
         {
@@ -31,9 +31,8 @@ public partial class ChessEngine
             return "";
         }
 
-        Random rand = new Random();
-        Move randomMove = legalMoves[rand.Next(0, legalMoves.Count)];
+        Move bestMove = MoveSelection.MoveSelection.SelctMove(board, legalMoves);
 
-        return BitboardUtils.MoveToUci(randomMove);
+        return BitboardUtils.MoveToUci(bestMove);
     }
 }
